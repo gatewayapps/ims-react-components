@@ -1,0 +1,16 @@
+{
+  "name": "@gatewayapps/ims-react-components",
+  "version": "0.0.1",
+  "main": "./dist/index.js",
+  "devDependencies": {
+    "@types/react": "^16.8.14",
+    "prettier": "^1.17.0",
+    "prettier-tslint": "^0.4.2",
+    "react": "^16.8.6",
+    "tslint": "^5.16.0",
+    "typescript": "^3.4.5"
+  },
+  "peerDependencies": {
+    "@gatewayapps/ims-hub-services": "^0.0.1"
+  }
+}
