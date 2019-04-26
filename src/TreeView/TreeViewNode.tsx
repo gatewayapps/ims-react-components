@@ -1,52 +1,42 @@
 import * as React from 'react'
-import { INodeWithChildren } from '@gatewayapps/ims-hub-services'
+
 import styled from '../utils/styled-components'
+import { ITreeViewNodeProps } from './ITreeViewNodeProps'
+import { ITreeViewNodeStyleProps } from './ITreeViewNodeStyleProps'
+import _ from 'lodash'
 
-export interface ITreeViewNodeProps {
-  node: INodeWithChildren
-  nodeStyle?: React.CSSProperties
-  toggleStyle?: React.CSSProperties
-  titleStyle?: React.CSSProperties
-  selectedNodeId?: number
-  nodeFilterText?: string
-  activeTextColor?: string
-  activeBackgroundColor?: string
-  hoverTextColor?: string
-  hoverBackgroundColor?: string
-  renderNodeToggle?: (node: INodeWithChildren, isExpanded: boolean) => React.ReactNode
-  renderNodeTitle?: (node: INodeWithChildren, isExpanded: boolean) => React.ReactNode
-  onNodeToggled?: (node: INodeWithChildren, isExpanded: boolean) => void
-  onNodeSelected?: (node: INodeWithChildren) => void
-}
-
-export interface INodeStyleProps {
-  hidden?: boolean
+export interface INodeStyleProps extends ITreeViewNodeStyleProps {
   active?: boolean
-  activeTextColor?: string
-  activeBackgroundColor?: string
-  hoverTextColor?: string
-  hoverBackgroundColor?: string
 }
 
 export interface ITreeViewNodeState {
   isExpanded: boolean
-  isHidden: boolean
 }
 
 const TreeViewNodeContainer = styled('div')<INodeStyleProps>`
   display: flex;
   flex-direction: row;
   padding: 0.25rem;
-  display: ${(props: INodeStyleProps) => (props.hidden ? 'none' : 'flex')}
   background-color: ${(props: INodeStyleProps) =>
     props.active ? props.activeBackgroundColor || '#1a6dca' : 'transparent'};
   color: ${(props: any) => (props.active ? props.activeTextColor || 'white' : 'black')};
 
   :hover {
-    background-color: ${(props: INodeStyleProps) => props.hoverBackgroundColor || '#93ADC9'}
-    color: ${(props: INodeStyleProps) => props.hoverTextColor || 'black'}
+    background-color: ${(props: INodeStyleProps) => {
+      if (props.active) {
+        return props.activeBackgroundColor || '#1a6dca'
+      } else {
+        return props.hoverBackgroundColor || '#93ADC9'
+      }
+    }};
+    color: ${(props: INodeStyleProps) => {
+      if (props.active) {
+        return props.activeTextColor || 'white'
+      } else {
+        return props.hoverTextColor || 'black'
+      }
+    }};
   }
-
 `
 
 const TreeViewNodeToggleContainer = styled.div`
@@ -63,40 +53,34 @@ const TreeViewNodeChildrenContainer = styled.div`
 `
 
 export class TreeViewNode extends React.Component<ITreeViewNodeProps, ITreeViewNodeState> {
-  state = { isExpanded: false, isHidden: false }
+  state = { isExpanded: this.props.nodeHashMap[this.props.node.nodeId].defaultExpanded || false }
 
-  async componentDidUpdate(prevProps: ITreeViewNodeProps, prevState: ITreeViewNodeState) {
-    if (prevProps.nodeFilterText !== this.props.nodeFilterText) {
-      const filterText = this.props.nodeFilterText || ''
-      if (filterText.trim() === '') {
-        this.setState({ isHidden: false })
-      } else {
-        const filterExp = new RegExp(filterText, 'ig')
-        const matchesFilter = await this.nodeContainsFilterText(this.props.node, filterExp)
-        this.setState({ isHidden: !matchesFilter })
-      }
+  componentDidMount() {
+    this.determineExpandedState()
+  }
+
+  componentDidUpdate(prevProps: ITreeViewNodeProps, prevState: ITreeViewNodeState) {
+    if (!_.isEqual(prevProps.filteredNodes, this.props.filteredNodes)) {
+      this.determineExpandedState()
     }
   }
 
-  private async nodeContainsFilterText(node: INodeWithChildren, filterExp: RegExp) {
-    if (filterExp.test(node.name)) {
-      return true
+  determineExpandedState = () => {
+    if (this.props.filteredNodes) {
+      this.setState({ isExpanded: this.props.filteredNodes[this.props.node.nodeId] })
     }
-    const children = node.children || []
-    for (let i = 0; i < children.length; i++) {
-      if (this.nodeContainsFilterText(node.children[i], filterExp)) {
-        return true
-      }
-    }
-    return false
   }
 
-  public render = () => {
+  render = () => {
+    if (this.props.filteredNodes && !this.props.filteredNodes[this.props.node.nodeId]) {
+      return null
+    }
     return (
       <div>
         <TreeViewNodeContainer
           style={this.props.nodeStyle}
           active={this.props.node.nodeId === this.props.selectedNodeId}
+          {...this.props.nodeStyleOptions}
           onClick={(event) => {
             if (this.props.onNodeSelected) {
               this.props.onNodeSelected(this.props.node)
@@ -119,8 +103,10 @@ export class TreeViewNode extends React.Component<ITreeViewNodeProps, ITreeViewN
     if (this.props.onNodeToggled) {
       this.props.onNodeToggled(this.props.node, newExpandedState)
     }
-    event.stopPropagation()
-    event.preventDefault()
+    if (!this.props.selectOnToggle) {
+      event.stopPropagation()
+      event.preventDefault()
+    }
   }
 
   renderNodeToggle() {
