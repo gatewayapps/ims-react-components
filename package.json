@@ -1,0 +1,23 @@
+{
+  "name": "@gatewayapps/ims-react-components",
+  "version": "0.0.1",
+  "main": "./dist/index.js",
+  "devDependencies": {
+    "@types/lodash": "^4.14.123",
+    "@types/node": "^11.13.7",
+    "@types/react": "^16.8.14",
+    "@types/styled-components": "^4.1.14",
+    "prettier": "^1.17.0",
+    "prettier-tslint": "^0.4.2",
+    "tslint": "^5.16.0",
+    "typescript": "^3.4.5"
+  },
+  "peerDependencies": {
+    "react": "^16.8.6",
+    "@gatewayapps/ims-hub-services": "^0.0.1"
+  },
+  "dependencies": {
+    "styled-components": "^4.2.0",
+    "lodash": "^4.17.11"
+  }
+}
