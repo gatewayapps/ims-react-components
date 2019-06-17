@@ -71,25 +71,22 @@ export class TreeView extends React.Component<ITreeViewProps, ITreeViewState> {
 
   loadTreeData = async () => {
     this.setState({ loading: true })
-    const role = this.props.role || 'user'
-    const action = this.props.action || '*'
-    const finalurl = `${this.props.serviceUrl}?role=${role}&action=${action}&treeId=${
-      this.props.treeId
-    }`
 
-    const response = await fetch(finalurl, {
+    const response = await fetch(this.props.serviceUrl, {
       method: 'GET',
       headers: {
-        'x-ims-authorization': `JWT ${this.props.accessToken}`,
-        'x-ims-package-id': this.props.packageId
+        'x-ims-authorization': `JWT ${this.props.accessToken}`
       }
     })
 
     const result: INodeWithChildren[] = await response.json()
+
     const hashMap: { [key: number]: INodeHashMapEntry } = {}
 
     this.populateNodeHashMap(result, hashMap)
+
     this.applyInitialExpansion(hashMap)
+
     this.setState({ rootNodes: result, loading: false, nodeHashMap: hashMap })
   }
 
@@ -145,14 +142,7 @@ export class TreeView extends React.Component<ITreeViewProps, ITreeViewState> {
   }
 
   render = () => {
-    const {
-      serviceUrl,
-      treeId,
-      containerStyle,
-      onNodeSelected,
-      selectedNodeId,
-      ...props
-    } = this.props
+    const { serviceUrl, containerStyle, onNodeSelected, selectedNodeId, ...props } = this.props
     return (
       <div className="tree-view-container" style={containerStyle}>
         {this.state.rootNodes.map((node) => (

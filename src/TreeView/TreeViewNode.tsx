@@ -11,6 +11,7 @@ export interface INodeStyleProps extends ITreeViewNodeStyleProps {
 
 export interface ITreeViewNodeState {
   isExpanded: boolean
+  nodeStyleOptions?: ITreeViewNodeStyleProps
 }
 
 const TreeViewNodeContainer = styled('div')<INodeStyleProps>`
@@ -18,8 +19,11 @@ const TreeViewNodeContainer = styled('div')<INodeStyleProps>`
   flex-direction: row;
   padding: 0.25rem;
   background-color: ${(props: INodeStyleProps) =>
-    props.active ? props.activeBackgroundColor || '#1a6dca' : 'transparent'};
-  color: ${(props: any) => (props.active ? props.activeTextColor || 'white' : 'black')};
+    props.active
+      ? props.activeBackgroundColor || '#1a6dca'
+      : props.defaultBackgroundColor || 'transparent'};
+  color: ${(props: any) =>
+    props.active ? props.activeTextColor || 'white' : props.defaultTextColor || 'black'};
 
   :hover {
     background-color: ${(props: INodeStyleProps) => {
@@ -39,13 +43,10 @@ const TreeViewNodeContainer = styled('div')<INodeStyleProps>`
   }
 `
 
-const TreeViewNodeToggleContainer = styled.div`
-  padding: 0.25rem;
-`
+const TreeViewNodeToggleContainer = styled.div``
 
 const TreeViewNodeTitleContainer = styled.div`
   flex: 1;
-  padding: 0.25rem;
 `
 
 const TreeViewNodeChildrenContainer = styled.div`
@@ -53,21 +54,34 @@ const TreeViewNodeChildrenContainer = styled.div`
 `
 
 export class TreeViewNode extends React.Component<ITreeViewNodeProps, ITreeViewNodeState> {
-  state = { isExpanded: this.props.nodeHashMap[this.props.node.nodeId].defaultExpanded || false }
+  state = {
+    isExpanded: this.props.nodeHashMap[this.props.node.nodeId].defaultExpanded || false,
+    nodeStyleOptions: this.props.nodeStyleOptions
+  }
 
   componentDidMount() {
     this.determineExpandedState()
+    this.updateStyleOptions()
   }
 
   componentDidUpdate(prevProps: ITreeViewNodeProps, prevState: ITreeViewNodeState) {
     if (!_.isEqual(prevProps.filteredNodes, this.props.filteredNodes)) {
       this.determineExpandedState()
+      this.updateStyleOptions()
     }
   }
 
   determineExpandedState = () => {
     if (this.props.filteredNodes) {
       this.setState({ isExpanded: this.props.filteredNodes[this.props.node.nodeId] })
+    }
+  }
+
+  updateStyleOptions = () => {
+    if (this.props.getNodeStyleOptions) {
+      this.setState({
+        nodeStyleOptions: this.props.getNodeStyleOptions(this.props.node, this.state.isExpanded)
+      })
     }
   }
 
@@ -80,7 +94,7 @@ export class TreeViewNode extends React.Component<ITreeViewNodeProps, ITreeViewN
         <TreeViewNodeContainer
           style={this.props.nodeStyle}
           active={this.props.node.nodeId === this.props.selectedNodeId}
-          {...this.props.nodeStyleOptions}
+          {...this.state.nodeStyleOptions}
           onClick={(event) => {
             if (this.props.onNodeSelected) {
               this.props.onNodeSelected(this.props.node)
