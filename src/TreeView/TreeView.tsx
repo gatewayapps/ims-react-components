@@ -70,24 +70,30 @@ export class TreeView extends React.Component<ITreeViewProps, ITreeViewState> {
   }
 
   loadTreeData = async () => {
-    this.setState({ loading: true })
+    try {
+      this.setState({ loading: true })
 
-    const response = await fetch(this.props.serviceUrl, {
-      method: 'GET',
-      headers: {
-        'x-ims-authorization': `JWT ${this.props.accessToken}`
-      }
-    })
+      const response = await fetch(this.props.serviceUrl, {
+        method: 'GET',
+        headers: {
+          'x-ims-authorization': `JWT ${this.props.accessToken}`,
+          accept: 'application/json'
+        }
+      })
+      const responseData = await response.text()
 
-    const result: INodeWithChildren[] = await response.json()
+      const result: INodeWithChildren[] = JSON.parse(responseData)
 
-    const hashMap: { [key: number]: INodeHashMapEntry } = {}
+      const hashMap: { [key: number]: INodeHashMapEntry } = {}
 
-    this.populateNodeHashMap(result, hashMap)
+      this.populateNodeHashMap(result, hashMap)
 
-    this.applyInitialExpansion(hashMap)
+      this.applyInitialExpansion(hashMap)
 
-    this.setState({ rootNodes: result, loading: false, nodeHashMap: hashMap })
+      this.setState({ rootNodes: result, loading: false, nodeHashMap: hashMap })
+    } catch (err) {
+      alert(err)
+    }
   }
 
   applyInitialExpansion = (hashMap: { [key: number]: INodeHashMapEntry }) => {
