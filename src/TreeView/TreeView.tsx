@@ -158,6 +158,7 @@ export class TreeView extends React.Component<ITreeViewProps, ITreeViewState> {
             onNodeSelected={this._onNodeSelected}
             nodeHashMap={this.state.nodeHashMap}
             selectedNodeId={this.state.selectedNodeId}
+            shouldRenderNode={this.props.shouldRenderNode}
             {...props}
             key={`node-${node.nodeId}`}
           />

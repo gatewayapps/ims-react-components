@@ -86,6 +86,9 @@ export class TreeViewNode extends React.Component<ITreeViewNodeProps, ITreeViewN
   }
 
   render = () => {
+    if (this.props.shouldRenderNode && !this.props.shouldRenderNode(this.props.node)) {
+      return null
+    }
     if (this.props.filteredNodes && !this.props.filteredNodes[this.props.node.nodeId]) {
       return null
     }

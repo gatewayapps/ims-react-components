@@ -15,6 +15,7 @@ export interface ITreeViewCommonProps {
   getNodeStyleOptions?: (node: INodeWithChildren, isExpanded: boolean) => ITreeViewNodeStyleProps
   onNodeToggled?: (node: INodeWithChildren, isExpanded: boolean) => void
   onNodeSelected?: (node: INodeWithChildren) => void
+  shouldRenderNode?: (node: INodeWithChildren) => boolean
 }
 
 export type InitialExpansionModes = 'selectedNodeOnly' | 'selectedNodeAndCousins' | 'none'
