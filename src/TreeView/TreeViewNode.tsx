@@ -4,6 +4,7 @@ import styled from '../utils/styled-components'
 import { ITreeViewNodeProps } from './ITreeViewNodeProps'
 import { ITreeViewNodeStyleProps } from './ITreeViewNodeStyleProps'
 import _ from 'lodash'
+import { RenderNodeProps } from './ITreeViewCommonProps'
 
 export interface INodeStyleProps extends ITreeViewNodeStyleProps {
   active?: boolean
@@ -65,6 +66,15 @@ export class TreeViewNode extends React.Component<ITreeViewNodeProps, ITreeViewN
   }
 
   componentDidUpdate(prevProps: ITreeViewNodeProps, prevState: ITreeViewNodeState) {
+    if (
+      this.props.nodeHashMap[this.props.node.nodeId].defaultExpanded &&
+      !prevProps.nodeHashMap[this.props.node.nodeId].defaultExpanded
+    ) {
+      this.setState({
+        isExpanded: true
+      })
+    }
+
     if (!_.isEqual(prevProps.filteredNodes, this.props.filteredNodes)) {
       this.determineExpandedState()
       this.updateStyleOptions()
@@ -80,18 +90,30 @@ export class TreeViewNode extends React.Component<ITreeViewNodeProps, ITreeViewN
   updateStyleOptions = () => {
     if (this.props.getNodeStyleOptions) {
       this.setState({
-        nodeStyleOptions: this.props.getNodeStyleOptions(this.props.node, this.state.isExpanded)
+        nodeStyleOptions: this.props.getNodeStyleOptions({
+          node: this.props.node,
+          isExpanded: this.state.isExpanded
+        })
       })
     }
   }
 
   render = () => {
-    if (this.props.shouldRenderNode && !this.props.shouldRenderNode(this.props.node)) {
+    if (
+      this.props.shouldRenderNode &&
+      !this.props.shouldRenderNode({ node: this.props.node, isExpanded: this.state.isExpanded })
+    ) {
       return null
     }
     if (this.props.filteredNodes && !this.props.filteredNodes[this.props.node.nodeId]) {
       return null
     }
+
+    const renderNodeProps: RenderNodeProps = {
+      node: this.props.node,
+      isExpanded: this.state.isExpanded
+    }
+
     return (
       <div>
         <TreeViewNodeContainer
@@ -100,7 +122,7 @@ export class TreeViewNode extends React.Component<ITreeViewNodeProps, ITreeViewN
           {...this.state.nodeStyleOptions}
           onClick={(event) => {
             if (this.props.onNodeSelected) {
-              this.props.onNodeSelected(this.props.node)
+              this.props.onNodeSelected(renderNodeProps)
             }
           }}
           id={`node-${this.props.node.nodeId}`}>
@@ -118,7 +140,7 @@ export class TreeViewNode extends React.Component<ITreeViewNodeProps, ITreeViewN
     const newExpandedState = !this.state.isExpanded
     this.setState({ isExpanded: newExpandedState })
     if (this.props.onNodeToggled) {
-      this.props.onNodeToggled(this.props.node, newExpandedState)
+      this.props.onNodeToggled({ node: this.props.node, isExpanded: newExpandedState })
     }
     if (!this.props.selectOnToggle) {
       event.stopPropagation()
@@ -128,14 +150,20 @@ export class TreeViewNode extends React.Component<ITreeViewNodeProps, ITreeViewN
 
   renderNodeToggle() {
     if (this.props.renderNodeToggle) {
-      return this.props.renderNodeToggle(this.props.node, this.state.isExpanded)
+      return this.props.renderNodeToggle({
+        node: this.props.node,
+        isExpanded: this.state.isExpanded
+      })
     } else {
       return <div style={this.props.toggleStyle}>{this.state.isExpanded ? '-' : '+'}</div>
     }
   }
   renderNodeTitle() {
     if (this.props.renderNodeTitle) {
-      return this.props.renderNodeTitle(this.props.node, this.state.isExpanded)
+      return this.props.renderNodeTitle({
+        node: this.props.node,
+        isExpanded: this.state.isExpanded
+      })
     } else {
       return <div style={this.props.titleStyle}>{this.props.node.name}</div>
     }

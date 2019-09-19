@@ -4,6 +4,7 @@ import { TreeViewNode } from './TreeViewNode'
 import { debounce } from 'lodash'
 import { ITreeViewProps } from './ITreeViewProps'
 import { INodeHashMapEntry } from './ITreeViewNodeProps'
+import { RenderNodeProps } from './ITreeViewCommonProps'
 
 export interface ITreeViewState {
   loading: boolean
@@ -24,6 +25,7 @@ export class TreeView extends React.Component<ITreeViewProps, ITreeViewState> {
   componentDidUpdate = (prevProps: ITreeViewProps, prevState: ITreeViewState) => {
     if (prevProps.selectedNodeId !== this.props.selectedNodeId) {
       this.setState({ selectedNodeId: this.props.selectedNodeId })
+      this.applyInitialExpansion(this.state.nodeHashMap)
     }
     if (
       prevProps.nodeFilterText !== this.props.nodeFilterText ||
@@ -91,6 +93,10 @@ export class TreeView extends React.Component<ITreeViewProps, ITreeViewState> {
       this.applyInitialExpansion(hashMap)
 
       this.setState({ rootNodes: result, loading: false, nodeHashMap: hashMap })
+
+      if (this.props.onTreeLoaded) {
+        this.props.onTreeLoaded(result)
+      }
     } catch (err) {
       alert(err)
     }
@@ -140,10 +146,11 @@ export class TreeView extends React.Component<ITreeViewProps, ITreeViewState> {
     })
   }
 
-  _onNodeSelected = (node: INodeWithChildren) => {
+  _onNodeSelected = (props: RenderNodeProps) => {
+    const { node } = props
     this.setState({ selectedNodeId: node.nodeId })
     if (this.props.onNodeSelected) {
-      this.props.onNodeSelected(node)
+      this.props.onNodeSelected(props)
     }
   }
 
