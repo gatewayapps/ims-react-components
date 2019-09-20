@@ -18,6 +18,7 @@ export interface ITreeViewCommonProps {
   renderNodeToggle?: (props: RenderNodeProps) => React.ReactNode
   renderNodeTitle?: (props: RenderNodeProps) => React.ReactNode
   getNodeStyleOptions?: (props: RenderNodeProps) => ITreeViewNodeStyleProps
+  getToggleStyleOptions?: (props: RenderNodeProps) => ITreeViewNodeStyleProps
   onNodeToggled?: (props: RenderNodeProps) => void
   onNodeSelected?: (props: RenderNodeProps) => void
   shouldRenderNode?: (props: RenderNodeProps) => boolean

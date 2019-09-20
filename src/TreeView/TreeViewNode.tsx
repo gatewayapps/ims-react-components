@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React, { useState, useEffect } from 'react'
 
 import styled from '../utils/styled-components'
 import { ITreeViewNodeProps } from './ITreeViewNodeProps'
@@ -25,7 +25,6 @@ const TreeViewNodeContainer = styled('div')<INodeStyleProps>`
       : props.defaultBackgroundColor || 'transparent'};
   color: ${(props: any) =>
     props.active ? props.activeTextColor || 'white' : props.defaultTextColor || 'black'};
-
   :hover {
     background-color: ${(props: INodeStyleProps) => {
       if (props.active) {
@@ -54,132 +53,99 @@ const TreeViewNodeChildrenContainer = styled.div`
   padding-left: 0.75rem;
 `
 
-export class TreeViewNode extends React.Component<ITreeViewNodeProps, ITreeViewNodeState> {
-  state = {
-    isExpanded: this.props.nodeHashMap[this.props.node.nodeId].defaultExpanded || false,
-    nodeStyleOptions: this.props.nodeStyleOptions
+export const TreeViewNode = (props: ITreeViewNodeProps) => {
+  const [isExpanded, setIsExpanded] = useState(props.nodeHashMap[props.node.nodeId].defaultExpanded)
+
+  const [nodeStyleOptions, setNodeStyleOptions] = useState(props.nodeStyleOptions)
+
+  useEffect(() => {
+    if (props.getNodeStyleOptions) {
+      setNodeStyleOptions(props.getNodeStyleOptions({ node: props.node, isExpanded }))
+    }
+    if (props.filteredNodes) {
+      setIsExpanded(props.filteredNodes[props.node.nodeId])
+    }
+  }, [props.filteredNodes])
+
+  useEffect(() => {
+    if (props.nodeHashMap[props.node.nodeId].defaultExpanded) {
+      setIsExpanded(true)
+    }
+  }, [props.nodeHashMap[props.node.nodeId].defaultExpanded])
+
+  if (
+    props.shouldRenderNode &&
+    !props.shouldRenderNode({ node: props.node, isExpanded: isExpanded })
+  ) {
+    return null
+  }
+  if (props.filteredNodes && !props.filteredNodes[props.node.nodeId]) {
+    return null
   }
 
-  componentDidMount() {
-    this.determineExpandedState()
-    this.updateStyleOptions()
+  const renderNodeProps: RenderNodeProps = {
+    node: props.node,
+    isExpanded: isExpanded
   }
 
-  componentDidUpdate(prevProps: ITreeViewNodeProps, prevState: ITreeViewNodeState) {
-    if (
-      this.props.nodeHashMap[this.props.node.nodeId].defaultExpanded &&
-      !prevProps.nodeHashMap[this.props.node.nodeId].defaultExpanded
-    ) {
-      this.setState({
-        isExpanded: true
-      })
-    }
+  const toggle = props.renderNodeToggle ? (
+    props.renderNodeToggle({
+      node: props.node,
+      isExpanded: isExpanded
+    })
+  ) : (
+    <div style={props.toggleStyle}>{isExpanded ? '-' : '+'}</div>
+  )
 
-    if (!_.isEqual(prevProps.filteredNodes, this.props.filteredNodes)) {
-      this.determineExpandedState()
-      this.updateStyleOptions()
-    }
-  }
+  const title = props.renderNodeTitle ? (
+    props.renderNodeTitle({
+      node: props.node,
+      isExpanded: isExpanded
+    })
+  ) : (
+    <div style={props.titleStyle}>{props.node.name}</div>
+  )
 
-  determineExpandedState = () => {
-    if (this.props.filteredNodes) {
-      this.setState({ isExpanded: this.props.filteredNodes[this.props.node.nodeId] })
-    }
-  }
+  const children = props.node.children || []
+  const childNodes = isExpanded ? (
+    <TreeViewNodeChildrenContainer>
+      {children.map((childNode) => (
+        <TreeViewNode key={`node-${childNode.nodeId}`} {...props} node={childNode} />
+      ))}
+    </TreeViewNodeChildrenContainer>
+  ) : null
 
-  updateStyleOptions = () => {
-    if (this.props.getNodeStyleOptions) {
-      this.setState({
-        nodeStyleOptions: this.props.getNodeStyleOptions({
-          node: this.props.node,
-          isExpanded: this.state.isExpanded
-        })
-      })
-    }
-  }
-
-  render = () => {
-    if (
-      this.props.shouldRenderNode &&
-      !this.props.shouldRenderNode({ node: this.props.node, isExpanded: this.state.isExpanded })
-    ) {
-      return null
-    }
-    if (this.props.filteredNodes && !this.props.filteredNodes[this.props.node.nodeId]) {
-      return null
-    }
-
-    const renderNodeProps: RenderNodeProps = {
-      node: this.props.node,
-      isExpanded: this.state.isExpanded
-    }
-
-    return (
-      <div>
-        <TreeViewNodeContainer
-          style={this.props.nodeStyle}
-          active={this.props.node.nodeId === this.props.selectedNodeId}
-          {...this.state.nodeStyleOptions}
+  return (
+    <div>
+      <TreeViewNodeContainer
+        style={props.nodeStyle}
+        active={props.node.nodeId === props.selectedNodeId}
+        {...nodeStyleOptions}
+        onClick={(event) => {
+          if (props.onNodeSelected) {
+            props.onNodeSelected(renderNodeProps)
+          }
+        }}
+        id={`node-${props.node.nodeId}`}>
+        <TreeViewNodeToggleContainer
           onClick={(event) => {
-            if (this.props.onNodeSelected) {
-              this.props.onNodeSelected(renderNodeProps)
+            const newIsExpanded = !isExpanded
+            setIsExpanded(newIsExpanded)
+
+            if (props.onNodeToggled) {
+              props.onNodeToggled({ node: props.node, isExpanded: newIsExpanded })
             }
-          }}
-          id={`node-${this.props.node.nodeId}`}>
-          <TreeViewNodeToggleContainer onClick={this._onToggleClick}>
-            {this.renderNodeToggle()}
-          </TreeViewNodeToggleContainer>
-          <TreeViewNodeTitleContainer>{this.renderNodeTitle()}</TreeViewNodeTitleContainer>
-        </TreeViewNodeContainer>
-        {this.renderNodeChildren()}
-      </div>
-    )
-  }
-
-  _onToggleClick = (event) => {
-    const newExpandedState = !this.state.isExpanded
-    this.setState({ isExpanded: newExpandedState })
-    if (this.props.onNodeToggled) {
-      this.props.onNodeToggled({ node: this.props.node, isExpanded: newExpandedState })
-    }
-    if (!this.props.selectOnToggle) {
-      event.stopPropagation()
-      event.preventDefault()
-    }
-  }
-
-  renderNodeToggle() {
-    if (this.props.renderNodeToggle) {
-      return this.props.renderNodeToggle({
-        node: this.props.node,
-        isExpanded: this.state.isExpanded
-      })
-    } else {
-      return <div style={this.props.toggleStyle}>{this.state.isExpanded ? '-' : '+'}</div>
-    }
-  }
-  renderNodeTitle() {
-    if (this.props.renderNodeTitle) {
-      return this.props.renderNodeTitle({
-        node: this.props.node,
-        isExpanded: this.state.isExpanded
-      })
-    } else {
-      return <div style={this.props.titleStyle}>{this.props.node.name}</div>
-    }
-  }
-  renderNodeChildren() {
-    const children = this.props.node.children || []
-    if (this.state.isExpanded) {
-      return (
-        <TreeViewNodeChildrenContainer>
-          {children.map((childNode) => (
-            <TreeViewNode key={`node-${childNode.nodeId}`} {...this.props} node={childNode} />
-          ))}
-        </TreeViewNodeChildrenContainer>
-      )
-    } else {
-      return null
-    }
-  }
+            if (!props.selectOnToggle) {
+              event.stopPropagation()
+              event.preventDefault()
+            }
+            setIsExpanded(newIsExpanded)
+          }}>
+          {toggle}
+        </TreeViewNodeToggleContainer>
+        <TreeViewNodeTitleContainer>{title}</TreeViewNodeTitleContainer>
+      </TreeViewNodeContainer>
+      {childNodes}
+    </div>
+  )
 }
