@@ -5,6 +5,7 @@ import { debounce } from 'lodash'
 import { ITreeViewProps } from './ITreeViewProps'
 import { INodeHashMapEntry } from './ITreeViewNodeProps'
 import { RenderNodeProps } from './ITreeViewCommonProps'
+import { useFetch } from '../utils/useFetch'
 
 export interface ITreeViewState {
   loading: boolean
@@ -14,44 +15,43 @@ export interface ITreeViewState {
   nodeHashMap: { [key: number]: INodeHashMapEntry }
 }
 
-export class TreeView extends React.Component<ITreeViewProps, ITreeViewState> {
-  state = {
-    loading: false,
-    rootNodes: [] as INodeWithChildren[],
-    selectedNodeId: this.props.selectedNodeId,
-    filteredNodes: undefined,
-    nodeHashMap: {} as { [key: number]: INodeHashMapEntry }
-  }
-  componentDidUpdate = (prevProps: ITreeViewProps, prevState: ITreeViewState) => {
-    if (prevProps.selectedNodeId !== this.props.selectedNodeId) {
-      this.setState({ selectedNodeId: this.props.selectedNodeId })
-      this.applyInitialExpansion(this.state.nodeHashMap)
-    }
-    if (
-      prevProps.nodeFilterText !== this.props.nodeFilterText ||
-      prevState.rootNodes.length !== this.state.rootNodes.length
-    ) {
-      this.updateFilteredNodes()
-    }
-  }
-
-  updateFilteredNodes = debounce(
-    () => {
-      const filterText = this.props.nodeFilterText || ''
-      if (filterText.trim() === '') {
-        this.setState({ filteredNodes: undefined })
-      } else {
-        const filterExp = new RegExp(filterText, 'ig')
-
-        const filteredNodes = this.getMatchingNodeIds(filterExp)
-        this.setState({ filteredNodes: filteredNodes })
-      }
-    },
-    600,
-    { leading: false, trailing: true }
+export const TreeView = (props: ITreeViewProps) => {
+  const [loading, setLoading] = React.useState(false)
+  const [rootNodes, setRootNodes] = React.useState([])
+  const [selectedNodeId, setSelectedNodeId] = React.useState(props.selectedNodeId)
+  const [filteredNodes, setFilteredNodes] = React.useState<{ [key: number]: boolean } | undefined>(
+    undefined
   )
+  const [nodeHashMap, setNodeHashMap] = React.useState({})
+  const [filterText, setFilterText] = React.useState('')
 
-  getMatchingNodeIds(filterExp: RegExp): { [key: number]: boolean } {
+  alert('HELLO')
+
+  const { isLoading, response, error } = useFetch(props.serviceUrl, {
+    method: 'GET',
+    headers: {
+      'x-ims-authorization': `JWT ${this.props.accessToken}`,
+      accept: 'application/json'
+    }
+  })
+
+  if (!isLoading && response !== null && rootNodes.length !== response!.length) {
+    const hashMap: { [key: number]: INodeHashMapEntry } = {}
+
+    populateNodeHashMap(response, hashMap)
+    if (props.initialExpansionMode) {
+      applyInitialExpansion(props.initialExpansionMode, props.selectedNodeId, hashMap)
+    }
+
+    if (props.onTreeLoaded) {
+      props.onTreeLoaded(response)
+    }
+
+    setRootNodes(response)
+    setNodeHashMap(hashMap)
+  }
+
+  const getMatchingNodeIds = (filterExp: RegExp) => {
     const result: { [key: number]: boolean } = {}
     const nodeIds = Object.keys(this.state.nodeHashMap)
     nodeIds.forEach((nodeId) => {
@@ -67,110 +67,104 @@ export class TreeView extends React.Component<ITreeViewProps, ITreeViewState> {
     return result
   }
 
-  componentDidMount = () => {
-    this.loadTreeData()
-  }
+  const updateFilteredNodes = debounce(
+    () => {
+      const filterText = this.props.nodeFilterText || ''
+      if (filterText.trim() === '') {
+        setFilteredNodes(undefined)
+      } else {
+        const filterExp = new RegExp(filterText, 'ig')
 
-  loadTreeData = async () => {
-    try {
-      this.setState({ loading: true })
-
-      const response = await fetch(this.props.serviceUrl, {
-        method: 'GET',
-        headers: {
-          'x-ims-authorization': `JWT ${this.props.accessToken}`,
-          accept: 'application/json'
-        }
-      })
-      const responseData = await response.text()
-
-      const result: INodeWithChildren[] = JSON.parse(responseData)
-
-      const hashMap: { [key: number]: INodeHashMapEntry } = {}
-
-      this.populateNodeHashMap(result, hashMap)
-
-      this.applyInitialExpansion(hashMap)
-
-      this.setState({ rootNodes: result, loading: false, nodeHashMap: hashMap })
-
-      if (this.props.onTreeLoaded) {
-        this.props.onTreeLoaded(result)
+        const filteredNodes = getMatchingNodeIds(filterExp)
+        setFilteredNodes(filteredNodes)
       }
-    } catch (err) {
-      alert(err)
+    },
+    600,
+    { leading: false, trailing: true }
+  )
+
+  if (props.selectedNodeId !== selectedNodeId) {
+    setSelectedNodeId(props.selectedNodeId)
+    if (props.selectedNodeId) {
+      // call apply initial expansion
+      applyInitialExpansion(props.initialExpansionMode!, props.selectedNodeId!, nodeHashMap)
     }
   }
 
-  applyInitialExpansion = (hashMap: { [key: number]: INodeHashMapEntry }) => {
-    if (this.props.selectedNodeId) {
-      switch (this.props.initialExpansionMode) {
-        case 'selectedNodeAndCousins': {
-          const parentId = hashMap[this.props.selectedNodeId].parent
-          if (hashMap[parentId]) {
-            const grandparentId = hashMap[parentId].parent
-            if (hashMap[grandparentId]) {
-              const grandparentRef = hashMap[grandparentId].nodeRef
-              if (grandparentRef && grandparentRef.children) {
-                grandparentRef.children.forEach((child) => {
-                  hashMap[child.nodeId].defaultExpanded = true
-                })
-              }
+  if (props.nodeFilterText !== filterText) {
+    setFilterText(props.nodeFilterText || '')
+    updateFilteredNodes()
+  }
+
+  const { serviceUrl, containerStyle, onNodeSelected, ...nodeProps } = props
+  return (
+    <div className="tree-view-container" style={props.containerStyle}>
+      {this.state.rootNodes.map((node) => (
+        <TreeViewNode
+          node={node}
+          filteredNodes={filteredNodes}
+          onNodeSelected={(selectedProps: RenderNodeProps) => {
+            const { node } = selectedProps
+            setSelectedNodeId(node.nodeId)
+            if (props.onNodeSelected) {
+              props.onNodeSelected(selectedProps)
+            }
+          }}
+          nodeHashMap={nodeHashMap}
+          selectedNodeId={selectedNodeId}
+          shouldRenderNode={props.shouldRenderNode}
+          {...nodeProps}
+          key={`node-${node.nodeId}`}
+        />
+      ))}
+    </div>
+  )
+}
+
+const applyInitialExpansion = (
+  expansionMode: string,
+  selectedNodeId: number | undefined,
+  hashMap: { [key: number]: INodeHashMapEntry }
+) => {
+  if (selectedNodeId) {
+    switch (expansionMode) {
+      case 'selectedNodeAndCousins': {
+        const parentId = hashMap[selectedNodeId].parent
+        if (hashMap[parentId]) {
+          const grandparentId = hashMap[parentId].parent
+          if (hashMap[grandparentId]) {
+            const grandparentRef = hashMap[grandparentId].nodeRef
+            if (grandparentRef && grandparentRef.children) {
+              grandparentRef.children.forEach((child) => {
+                hashMap[child.nodeId].defaultExpanded = true
+              })
             }
           }
         }
-        case 'selectedNodeOnly': {
-          hashMap[this.props.selectedNodeId].defaultExpanded = true
-          let parentId = hashMap[this.props.selectedNodeId].parent
-          while (hashMap[parentId]) {
-            hashMap[parentId].defaultExpanded = true
-            parentId = hashMap[parentId].parent
-          }
+      }
+      case 'selectedNodeOnly': {
+        hashMap[selectedNodeId].defaultExpanded = true
+        let parentId = hashMap[selectedNodeId].parent
+        while (hashMap[parentId]) {
+          hashMap[parentId].defaultExpanded = true
+          parentId = hashMap[parentId].parent
         }
       }
     }
   }
+}
 
-  populateNodeHashMap = (
-    nodes: INodeWithChildren[],
-    hashMapRef: { [key: number]: INodeHashMapEntry }
-  ) => {
-    nodes.forEach((node) => {
-      hashMapRef[node.nodeId] = {
-        name: node.name,
-        nodeRef: node,
-        parent: node.parent,
-        defaultExpanded: false
-      }
-      this.populateNodeHashMap(node.children || [], hashMapRef)
-    })
-  }
-
-  _onNodeSelected = (props: RenderNodeProps) => {
-    const { node } = props
-    this.setState({ selectedNodeId: node.nodeId })
-    if (this.props.onNodeSelected) {
-      this.props.onNodeSelected(props)
+const populateNodeHashMap = (
+  nodes: INodeWithChildren[],
+  hashMapRef: { [key: number]: INodeHashMapEntry }
+) => {
+  nodes.forEach((node) => {
+    hashMapRef[node.nodeId] = {
+      name: node.name,
+      nodeRef: node,
+      parent: node.parent,
+      defaultExpanded: false
     }
-  }
-
-  render = () => {
-    const { serviceUrl, containerStyle, onNodeSelected, selectedNodeId, ...props } = this.props
-    return (
-      <div className="tree-view-container" style={containerStyle}>
-        {this.state.rootNodes.map((node) => (
-          <TreeViewNode
-            node={node}
-            filteredNodes={this.state.filteredNodes}
-            onNodeSelected={this._onNodeSelected}
-            nodeHashMap={this.state.nodeHashMap}
-            selectedNodeId={this.state.selectedNodeId}
-            shouldRenderNode={this.props.shouldRenderNode}
-            {...props}
-            key={`node-${node.nodeId}`}
-          />
-        ))}
-      </div>
-    )
-  }
+    populateNodeHashMap(node.children || [], hashMapRef)
+  })
 }
