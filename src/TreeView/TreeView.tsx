@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { INodeWithChildren } from '@gatewayapps/ims-hub-services'
 import { TreeViewNode } from './TreeViewNode'
-import { debounce } from 'lodash'
+
 import { ITreeViewProps } from './ITreeViewProps'
 import { INodeHashMapEntry } from './ITreeViewNodeProps'
 import { RenderNodeProps } from './ITreeViewCommonProps'
@@ -34,16 +34,15 @@ export const TreeView = (props: ITreeViewProps) => {
         setFilteredNodes(undefined)
       } else {
         const filterExp = new RegExp(filterText, 'ig')
-
         const filteredNodes = getMatchingNodeIds(filterExp)
         setFilteredNodes(filteredNodes)
       }
     },
-    600,
+    props.filterDebounceTime || 250,
     [props.nodeFilterText]
   )
 
-  const { isLoading, response, error } = useFetch(props.serviceUrl, {
+  const { response } = useFetch(props.serviceUrl, {
     method: 'GET',
     headers: {
       'x-ims-authorization': `JWT ${props.accessToken}`,
