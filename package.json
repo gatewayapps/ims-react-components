@@ -1,27 +1,27 @@
 {
   "name": "@gatewayapps/ims-react-components",
-  "version": "0.4.5",
+  "version": "0.5.0",
   "main": "./dist/index.js",
   "scripts": {
     "prepublishOnly": "yarn build",
     "build": "npx tsc"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.123",
-    "@types/node": "^11.13.7",
-    "@types/react": "^16.8.14",
-    "@types/styled-components": "^4.1.14",
-    "prettier": "^1.17.0",
+    "@types/lodash": "^4.14.142",
+    "@types/node": "^12.7.12",
+    "@types/react": "^16.9.5",
+    "@types/styled-components": "^4.1.19",
+    "prettier": "^1.18.2",
     "prettier-tslint": "^0.4.2",
-    "tslint": "^5.16.0",
-    "typescript": "^3.4.5"
+    "tslint": "^5.20.0",
+    "typescript": "^3.6.3"
   },
   "dependencies": {
     "@gatewayapps/ims-hub-services": "^0.4.1",
-    "lodash": "^4.17.11",
-    "react": "^16.9.0",
-    "react-use": "^12.2.0",
-    "styled-components": "^4.2.0"
+    "lodash": "^4.17.15",
+    "react": "^16.10.2",
+    "react-use": "^12.3.0",
+    "styled-components": "^4.4.0"
   },
   "publishConfig": {
     "access": "public"

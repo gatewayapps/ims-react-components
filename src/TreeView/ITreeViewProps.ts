@@ -5,5 +5,6 @@ export interface ITreeViewProps extends ITreeViewCommonProps {
   accessToken: string
   nodeFilterText?: string
   containerStyle?: React.CSSProperties
+  filterDebounceTime?: number
   onTreeLoaded?: (nodes: INodeWithChildren[]) => void
 }
