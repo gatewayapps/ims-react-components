@@ -1,6 +1,6 @@
 import React from 'react'
 
-export const useFetch = (url, options) => {
+export const useFetch = (url, options, triggerProps: any[] = []) => {
   const [response, setResponse] = React.useState<any>(null)
   const [error, setError] = React.useState(null)
   const [isLoading, setIsLoading] = React.useState(true)
@@ -20,6 +20,6 @@ export const useFetch = (url, options) => {
 
   React.useEffect(() => {
     refetch()
-  }, [])
+  }, triggerProps)
   return { response, error, isLoading, refetch }
 }
