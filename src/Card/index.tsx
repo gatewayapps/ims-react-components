@@ -2,10 +2,10 @@ import React, { CSSProperties, ReactNode, FC } from 'react'
 import * as Styled from './Card.styled'
 
 export interface ICardProps {
-  style: CSSProperties
-  title: ReactNode
-  subtitle: ReactNode
-  removeButton: boolean
+  style?: CSSProperties
+  title?: ReactNode
+  subtitle?: ReactNode
+  removeButton?: boolean
   renderHeader?: () => ReactNode
   onRemove?: () => void
 }
