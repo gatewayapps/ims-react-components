@@ -12,7 +12,7 @@ export interface IPersonCardProps extends ICardProps {
   person: I_v_UserAccount
   showPositionStartDate?: boolean
   showHireDate?: boolean
-  style: CSSProperties
+  style?: CSSProperties
 }
 
 const PersonCard: FC<IPersonCardProps> = ({
