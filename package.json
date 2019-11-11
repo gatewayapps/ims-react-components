@@ -1,10 +1,10 @@
 {
   "name": "@gatewayapps/ims-react-components",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "main": "./dist/index.js",
   "scripts": {
     "prepublishOnly": "yarn build",
-    "build": "npx tsc"
+    "build": "yarn tsc "
   },
   "devDependencies": {
     "@types/lodash": "^4.14.144",
