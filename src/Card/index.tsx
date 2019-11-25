@@ -24,7 +24,13 @@ const Card: FC<ICardProps> = (props) => {
     <Styled.Container style={props.style}>
       <Styled.Header className="clearfix">
         {props.removeButton && (
-          <Styled.RemoveButton className="btn btn-link btn-xs" onClick={() => props.onRemove}>
+          <Styled.RemoveButton
+            className="btn btn-link btn-xs"
+            onClick={() => {
+              if (props.onRemove) {
+                props.onRemove()
+              }
+            }}>
             <i className="fa fa-times text-danger" />
             <span className="sr-only">Remove</span>
           </Styled.RemoveButton>
