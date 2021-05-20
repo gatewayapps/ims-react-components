@@ -130,9 +130,9 @@
   integrity sha512-OWORNpfjMsSSUBVrRBVGECkhWcULOAJz9ZW8uK9qgxD+87M7jHRcvh/A96XXNhXTLmKcoYSQtBEX7lHMO7YRwg==
 
 "@gatewayapps/ims-hub-services@^0.5.0":
-  version "0.5.0"
-  resolved "https://npm.pkg.github.com/download/@gatewayapps/ims-hub-services/0.5.0/1c75b0dff5946313cc25b57a3bbb849166fd8aa02ff1d70b4fc5b8179ac4f9c7#a8f1edf8fad3d0f88ba1fe33892a31113759f079"
-  integrity sha512-BeG4m3J31o/TIJh3dEEGIKvf8bXfgNWDOWfobKdLeuTkNIpwhmoo+5pWZpjnLunKl6G0wOCUM4Gum5oF3Sf7eg==
+  version "0.5.1"
+  resolved "https://npm.pkg.github.com/download/@gatewayapps/ims-hub-services/0.5.1/2e34190aed0a0f2ba3c1e2404fc0bd3355e5b9ac179c3263d71f0d992e6f88f9#e2cb0219a63d7b40383b83f430d26fb9e18fc900"
+  integrity sha512-mzyzD6uEhCejcxl3ZPDpyX8BxVJaODzzoPqy64PhfTsalUM1Q5kt5LJLU1Fuu3aroE7GyBJCwvlzut+vKE2Czw==
   dependencies:
     debug "^4.1.1"
     isomorphic-fetch "^2.2.1"
