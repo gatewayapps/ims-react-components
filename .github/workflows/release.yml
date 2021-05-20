@@ -1,0 +1,25 @@
+name: Production CI
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  production_build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v1
+      - name: Install Package Dependencies
+        run: yarn install
+      - name: Setup Node.js (GPR)
+        uses: actions/setup-node@master
+        with:
+          node-version: '12.x'
+          registry-url: https://npm.pkg.github.com/
+          scope: '@gatewayapps'
+      - name: Publish
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
