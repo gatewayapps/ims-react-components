@@ -15,7 +15,7 @@ jobs:
       - name: Prepare npmrc
         run:  |
          echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> ./.npmrc
-        with:
+        env:
           NPM_TOKEN: {{ secrets.GITHUB_TOKEN }}
       - name: Install Package Dependencies
         run: yarn install
