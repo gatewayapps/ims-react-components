@@ -13,10 +13,10 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v1
       - name: Prepare npmrc
-        run:  |
-         echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> ./.npmrc
         env:
           NPM_TOKEN: {{ secrets.GITHUB_TOKEN }}
+        run:  |
+         echo //npm.pkg.github.com/:_authToken=${NPM_TOKEN} >> ./.npmrc
       - name: Install Package Dependencies
         run: yarn install
       - name: Build
