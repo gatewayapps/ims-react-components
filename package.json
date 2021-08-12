@@ -1,10 +1,13 @@
 {
   "name": "@gatewayapps/ims-react-components",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "./dist/index.js",
   "scripts": {
     "prepublishOnly": "yarn build",
-    "build": "yarn tsc "
+    "bundle-scss": "scss-bundle -e ./src/Calendar/css/index.scss -o ./src/Calendar/css/bundle.scss",
+    "compile-scss": "sass ./src/Calendar/css/bundle.scss ./dist/Calendar/style.css",
+    "scss": "yarn bundle-scss && yarn compile-scss",
+    "build": "yarn tsc && yarn scss"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.149",
@@ -13,6 +16,8 @@
     "@types/styled-components": "^4.4.3",
     "prettier": "^1.19.1",
     "react": "^16.12.0",
+    "sass": "^1.37.5",
+    "scss-bundle": "^3.1.2",
     "typescript": "^3.7.5"
   },
   "peerDependencies": {
@@ -22,20 +27,19 @@
     "styled-components": "^5.0.0"
   },
   "dependencies": {
-    "@gatewayapps/ims-hub-services": "^0.5.0",
-    "lodash": "^4.17.15",
-    "moment": "^2.24.0",
-    "react-use": "^12.3.1",
-    "styled-components": "^4.4.0",
-    "tslib": "^1.10.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.35",
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@fortawesome/react-fontawesome": "^0.1.14",
+    "@gatewayapps/ims-hub-services": "^0.5.0",
     "classnames": "^2.2.6",
     "date-fns": "^2.22.1",
-    
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0",
     "react-datepicker": "^3.8.0",
-    "react-tabs": "^3.2.2"
+    "react-tabs": "^3.2.2",
+    "react-use": "^12.3.1",
+    "styled-components": "^4.4.0",
+    "tslib": "^1.10.0"
   },
   "publishConfig": {
     "access": "public"
