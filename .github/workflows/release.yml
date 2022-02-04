@@ -17,7 +17,7 @@ jobs:
         run:  |
          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> ./.npmrc
       - name: Install Package Dependencies
-        run: yarn install
+        run: yarn install && yarn add @gatewayapps/ims-hub-services@0.7.1
       - name: Setup Node.js (GPR)
         uses: actions/setup-node@master
         with:
