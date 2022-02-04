@@ -22,6 +22,7 @@
   },
   "peerDependencies": {
     "date-fns": "^2.22.1",
+    "@gatewayapps/ims-hub-services": "^0.7.1",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "styled-components": "^5.0.0"
@@ -30,7 +31,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.35",
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@fortawesome/react-fontawesome": "^0.1.14",
-    "@gatewayapps/ims-hub-services": "^0.5.0",
+    
     "classnames": "^2.2.6",
     "date-fns": "^2.22.1",
     "lodash": "^4.17.15",
