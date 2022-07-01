@@ -4,7 +4,7 @@ import { TreeViewNode } from './TreeViewNode'
 
 import { ITreeViewProps } from './ITreeViewProps'
 import { INodeHashMapEntry } from './ITreeViewNodeProps'
-import { RenderNodeProps } from './ITreeViewCommonProps'
+import { InitialExpansionModes, RenderNodeProps } from './ITreeViewCommonProps'
 import { useFetch } from '../utils/useFetch'
 import { useDebounce } from 'react-use'
 
@@ -60,7 +60,8 @@ export const TreeView = (props: ITreeViewProps) => {
 
       populateNodeHashMap(response, hashMap)
       if (props.initialExpansionMode) {
-        applyInitialExpansion(props.initialExpansionMode, props.selectedNodeId, hashMap)
+        const rootNode = response.length > 0 ? response[0] : undefined
+        applyInitialExpansion(props.initialExpansionMode, props.selectedNodeId, hashMap, rootNode)
       }
 
       if (props.onTreeLoaded) {
@@ -118,9 +119,10 @@ export const TreeView = (props: ITreeViewProps) => {
 }
 
 const applyInitialExpansion = (
-  expansionMode: string,
+  expansionMode: InitialExpansionModes,
   selectedNodeId: number | undefined,
-  hashMap: { [key: number]: INodeHashMapEntry }
+  hashMap: { [key: number]: INodeHashMapEntry },
+  rootNode?: number
 ) => {
   if (selectedNodeId) {
     switch (expansionMode) {
@@ -146,6 +148,10 @@ const applyInitialExpansion = (
           parentId = hashMap[parentId].parent
         }
       }
+    }
+  } else {
+    if (expansionMode === 'rootNode' && rootNode) {
+      hashMap[rootNode].defaultExpanded = true
     }
   }
 }

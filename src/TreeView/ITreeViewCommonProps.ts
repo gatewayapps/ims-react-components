@@ -24,4 +24,8 @@ export interface ITreeViewCommonProps {
   shouldRenderNode?: (props: RenderNodeProps) => boolean
 }
 
-export type InitialExpansionModes = 'selectedNodeOnly' | 'selectedNodeAndCousins' | 'none'
+export type InitialExpansionModes =
+  | 'rootNode'
+  | 'selectedNodeOnly'
+  | 'selectedNodeAndCousins'
+  | 'none'
