@@ -122,7 +122,7 @@ const applyInitialExpansion = (
   expansionMode: InitialExpansionModes,
   selectedNodeId: number | undefined,
   hashMap: { [key: number]: INodeHashMapEntry },
-  rootNode?: number
+  rootNode?: any
 ) => {
   if (selectedNodeId) {
     switch (expansionMode) {
@@ -151,7 +151,7 @@ const applyInitialExpansion = (
     }
   } else {
     if (expansionMode === 'rootNode' && rootNode) {
-      hashMap[rootNode].defaultExpanded = true
+      hashMap[rootNode.nodeId].defaultExpanded = true
     }
   }
 }
